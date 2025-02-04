@@ -13,8 +13,8 @@ class DisplayManager:
         :param default_image: Path to the default image to display.
         """
         self.device_config = device_config
-        self.inky_display = auto()
-        self.inky_display.set_border(self.inky_display.BLACK)
+        self.epd = epd5in65f.EPD()
+        self.epd.init()
 
         # store display resolution in device config
         device_config.update_value("resolution", [int(self.inky_display.width), int(self.inky_display.height)])
@@ -43,7 +43,7 @@ class DisplayManager:
 
         # Display the image on the Inky display
         self.inky_display.set_image(image)
-        self.inky_display.show()
+        self.epd.display(self.epd.getbuffer(image))
 
     def display_image(self, image):
         """
@@ -62,4 +62,4 @@ class DisplayManager:
 
         # Display the image on the Inky display
         self.inky_display.set_image(image)
-        self.inky_display.show()
+        self.epd.display(self.epd.getbuffer(image))
