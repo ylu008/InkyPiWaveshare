@@ -43,7 +43,6 @@ class DisplayManager:
         image = resize_image(image, self.device_config.get_resolution(), plugin_config.get('image_settings', []))
 
         # Display the image on the Inky display
-        self.epd.Clear()
         self.epd.display(self.epd.getbuffer(image))
         self.epd.sleep()
 
@@ -63,6 +62,5 @@ class DisplayManager:
         image = resize_image(image, self.device_config.get_resolution())
 
         # Display the image on the Inky display
-        self.epd.Clear()
         self.epd.display(self.epd.getbuffer(image))
         self.epd.sleep()
