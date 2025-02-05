@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 class ImageUpload(BasePlugin):
     def generate_image(self, settings, device_config):
         image_location = settings.get("imageFile")
+        print(f"Image path: {image_location}")
 
         if not image_location:
             raise RuntimeError("Image not provided.")
