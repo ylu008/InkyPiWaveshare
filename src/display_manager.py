@@ -18,7 +18,7 @@ class DisplayManager:
         self.epd.Init()
 
         # store display resolution in device config
-        device_config.update_value("resolution", [int(self.inky_display.width), int(self.inky_display.height)])
+        device_config.update_value("resolution", [int(self.epd.width), int(self.epd.height)])
 
     def display_plugin(self, plugin_settings):
         """
@@ -43,7 +43,6 @@ class DisplayManager:
         image = resize_image(image, self.device_config.get_resolution(), plugin_config.get('image_settings', []))
 
         # Display the image on the Inky display
-        self.inky_display.set_image(image)
         self.epd.display(self.epd.getbuffer(image))
 
     def display_image(self, image):
@@ -62,5 +61,4 @@ class DisplayManager:
         image = resize_image(image, self.device_config.get_resolution())
 
         # Display the image on the Inky display
-        self.inky_display.set_image(image)
         self.epd.display(self.epd.getbuffer(image))
