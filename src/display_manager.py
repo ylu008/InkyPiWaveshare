@@ -15,6 +15,7 @@ class DisplayManager:
         """
         self.device_config = device_config
         self.epd = epd13in3E.EPD()
+        self.epd.Init()
 
         # store display resolution in device config
         device_config.update_value("resolution", [int(self.epd.width), int(self.epd.height)])
@@ -25,12 +26,12 @@ class DisplayManager:
 
         :param plugin_settings: Dictionary containing plugin settings.
         """
-        self.epd.Init()
         plugin_id = plugin_settings.get("plugin_id")
         plugin_config = next((plugin for plugin in self.device_config.get_plugins() if plugin['id'] == plugin_id), None)
 
         if not plugin_config:
             raise ValueError(f"Plugin '{plugin_id}' not found.")
+        self.epd.Init()
 
         plugin_instance = get_plugin_instance(plugin_config)
         image = plugin_instance.generate_image(plugin_settings, self.device_config)
@@ -54,6 +55,7 @@ class DisplayManager:
         """
         if not image:
             raise ValueError(f"No image provided.")
+        
         self.epd.Init()
         # Save the image
         image.save(self.device_config.current_image_file)
