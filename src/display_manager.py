@@ -1,4 +1,5 @@
 import os
+import epd13in3E
 from inky.auto import auto
 from utils.image_utils import resize_image, change_orientation
 from plugins.plugin_registry import get_plugin_instance
@@ -13,7 +14,7 @@ class DisplayManager:
         :param default_image: Path to the default image to display.
         """
         self.device_config = device_config
-        self.epd = epd5in65f.EPD()
+        self.epd = epd13in3E.EPD()
         self.epd.init()
 
         # store display resolution in device config
