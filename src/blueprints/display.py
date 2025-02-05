@@ -8,7 +8,7 @@ from utils.app_utils import resolve_path
 logger = logging.getLogger(__name__)
 display_bp = Blueprint("display", __name__)
 
-ALLOWED_FILE_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_FILE_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'bmp'}
 FILE_SAVE_DIR = resolve_path(os.path.join("static", "images", "saved"))
 
 def handle_request_files(request_files):
