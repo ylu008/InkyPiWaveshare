@@ -4,50 +4,48 @@ from inky.auto import auto
 from utils.image_utils import resize_image, change_orientation
 from plugins.plugin_registry import get_plugin_instance
 from PIL import Image
-import numpy as np
+
+# Define the six colors supported by Waveshare E Ink
+WAVESHARE_PALETTE = [
+    (0, 0, 0),        # Black
+    (255, 255, 255),  # White
+    (255, 255, 0),    # Yellow
+    (255, 0, 0),      # Red
+    (0, 0, 255),      # Blue
+    (0, 255, 0),      # Green
+]
+
+def quantize_image(image):
+    """
+    Converts an image to the 6-color palette supported by Waveshare E Ink
+    using dithering.
+    """
+    # Convert image to RGB if not already
+    image = image.convert("RGB")
+
+    # Create a palette image with only the 6 supported colors
+    palette_image = Image.new("P", (1, 1))
+    palette = []
+    for color in WAVESHARE_PALETTE:
+        palette.extend(color)  # Flatten RGB tuples
+    palette_image.putpalette(palette + [0] * (256 - len(WAVESHARE_PALETTE)) * 3)
+
+    # Convert the image using the custom palette with dithering
+    return image.quantize(palette=palette_image, dither=Image.Dither.FLOYDSTEINBERG)
 
 class DisplayManager:
     def __init__(self, device_config):
         """
         Manages the display and rendering of images.
 
-        :param device_config: The device configuration (Config class).
+        :param config: The device configuration (Config class).
         """
         self.device_config = device_config
         self.epd = epd13in3E.EPD()
         self.epd.Init()
 
-        # Store display resolution in device config
+        # store display resolution in device config
         device_config.update_value("resolution", [int(self.epd.width), int(self.epd.height)])
-
-    def apply_dithering(self, image):
-        """
-        Applies Floyd-Steinberg dithering to the image.
-        
-        :param image: Pillow Image object
-        :return: Dithered Pillow Image object
-        """
-        image = image.convert("L")  # Convert to grayscale
-        image_data = np.array(image, dtype=np.uint8)
-        height, width = image_data.shape
-        
-        for y in range(height):
-            for x in range(width):
-                old_pixel = image_data[y, x]
-                new_pixel = 255 if old_pixel > 127 else 0
-                image_data[y, x] = new_pixel
-                error = old_pixel - new_pixel
-                
-                if x < width - 1:
-                    image_data[y, x + 1] += error * 7 / 16
-                if y < height - 1:
-                    if x > 0:
-                        image_data[y + 1, x - 1] += error * 3 / 16
-                    image_data[y + 1, x] += error * 5 / 16
-                    if x < width - 1:
-                        image_data[y + 1, x + 1] += error * 1 / 16
-        
-        return Image.fromarray(image_data.astype(np.uint8))
 
     def display_plugin(self, plugin_settings):
         """
@@ -68,10 +66,12 @@ class DisplayManager:
         # Save the image
         image.save(self.device_config.current_image_file)
 
-        # Resize, adjust orientation, and apply dithering
+        # Resize and adjust orientation
         image = change_orientation(image, self.device_config.get_config("orientation"))
         image = resize_image(image, self.device_config.get_resolution(), plugin_config.get('image_settings', []))
-        image = self.apply_dithering(image)
+
+        # Convert the image to the supported colors using dithering
+        image = quantize_image(image)
 
         # Display the image on the Inky display
         self.epd.display(self.epd.getbuffer(image))
@@ -87,12 +87,15 @@ class DisplayManager:
             raise ValueError(f"No image provided.")
         
         self.epd.Init()
-        # Save the image
-        image.save(self.device_config.current_image_file)
-
-        # Resize, adjust orientation, and apply dithering
+        
+        # Resize and adjust orientation
         image = resize_image(image, self.device_config.get_resolution())
-        image = self.apply_dithering(image)
+
+        # Convert the image to the supported colors using dithering
+        image = quantize_image(image)
+
+        # Save the processed image
+        image.save(self.device_config.current_image_file)
 
         # Display the image on the Inky display
         self.epd.display(self.epd.getbuffer(image))
